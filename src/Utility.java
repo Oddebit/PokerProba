@@ -2,29 +2,45 @@ public class Utility {
 
     public static void main(String[] args){
 
-        System.out.println(probWantedInToDealOutDeck(2, 4, 6));
+        System.out.println(factorial(2, 47));
+        System.out.println(combination(47, 2));
+        System.out.println(probabilityToGetNOuts(47, 2, 2, 2));
     }
 
-    public static double probWantedInToDealOutDeck(int wanted, int toDeal, int inDeck) {
+    public static double probabilityToGetNOuts(int deck, int deal, int outsDeck, int outsDeal) {
 
-        return (combination(toDeal - wanted, inDeck - wanted))
-                / combination(toDeal, inDeck);
+        if (outsDeck < deal) return 0;
+
+        return combination(outsDeck, outsDeal) * combination(deck - outsDeck, deal - outsDeal)
+                / combination(deck, deal);
     }
 
-    public static double combination(int toDeal, int inDeck) {
+    public static double combination(int n, int r) {
 
-        return factorial(inDeck) / factorial(toDeal) * (factorial(inDeck - toDeal));
+        if (n < r) return 0;
+        if (r == 0) return 1;
+        if (n == 0) return 0;
+        if (r == n) return 1;
+        if (r == 1) return n;
+
+        return factorial(r, n) / factorial(r);
     }
 
-    public static double factorial(int n) {
+    public static double factorial(int max) {
+        return factorial(max - 1, max);
+    }
 
-        double result = 1;
+    public static double factorial(int range, int max) {
 
-        for (int i = 2; i <= n; i++) {
+        range--;
+        double result = max - range;
 
-            result = result* i;
+        for (int i = max - range + 1; i <= max; i++) {
+
+            result = result * i;
         }
 
-        return (result);
+        return result;
     }
+
 }
