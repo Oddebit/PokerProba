@@ -8,6 +8,10 @@ public class Player {
     private int[] handCode = new int[6];
 
 
+    public Player() {
+        this("X");
+    }
+
     public Player(String name) {
 
         this.name = name;
@@ -33,6 +37,7 @@ public class Player {
     public int getHandCode(int index) {
         return handCode[index];
     }
+    public int[] getHandCode() { return handCode; }
 
     public int getCardValue(int index) {
         return hand.get(index).getValue();

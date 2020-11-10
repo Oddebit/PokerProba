@@ -2,9 +2,8 @@ public class Utility {
 
     public static void main(String[] args){
 
-        System.out.println(factorial(2, 47));
-        System.out.println(combination(47, 2));
-        System.out.println(probabilityToGetNOuts(47, 2, 2, 2));
+        System.out.println(combination(169, 13));
+
     }
 
     public static double probabilityToGetNOuts(int deck, int deal, int outsDeck, int outsDeal) {
@@ -27,6 +26,7 @@ public class Utility {
     }
 
     public static double factorial(int max) {
+
         return factorial(max - 1, max);
     }
 
@@ -42,5 +42,4 @@ public class Utility {
 
         return result;
     }
-
 }

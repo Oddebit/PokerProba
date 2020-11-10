@@ -1,3 +1,4 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public class Table {
@@ -8,22 +9,33 @@ public class Table {
     WinProbTable winProbTable = new WinProbTable();
 
     Player player;
-    Player opponent;
+    Player[] opponents;
     Player dealer;
 
-    public Table() {
+    public Table(int opponents, int games) {
 
         this.player = new Player("Player");
-        this.opponent = new Player("Opponent");
+
+        this.opponents = new Player[opponents];
+
+        for (int i = 0; i < opponents; i++) {
+
+            this.opponents[i] = new Player("Opponent" + i);
+        }
+
         this.dealer = new Player("On the table");
 
-        for (int i = 0; i < 1_000_000_000; i++) {
+        for (int i = 0; i < games; i++) {
 
             newGame();
 
             dealHand(player, 2);
-            dealHand(opponent, 2);
             dealHand(dealer, 5);
+
+            for (int opp = 0; opp < this.opponents.length; opp++) {
+
+                dealHand(this.opponents[opp], 2);
+            }
 
             compareHands();
         }
@@ -32,12 +44,14 @@ public class Table {
 
     public void newGame() {
 
-        this.player.clearHand();
-        this.opponent.clearHand();
+        gameBoard = new String[4][13];
         this.dealer.clearHand();
 
-        gameBoard = new String[4][13];
+        this.player.clearHand();
 
+        for (int opp = 0; opp < this.opponents.length; opp++) {
+            this.opponents[opp].clearHand();
+        }
     }
 
     public void dealHand(Player player, int cards) {
@@ -57,39 +71,57 @@ public class Table {
                     occupied = false;
                 }
             }
-
         }
     }
 
     public void compareHands() {
 
         new HandCalculator(this, player);
-        new HandCalculator(this, opponent);
+
+        for (int opp = 0; opp < this.opponents.length; opp++) {
+            new HandCalculator(this, this.opponents[opp]);
+        }
 
         int x;
         int y;
 
         if(player.isHandSuited()) {
+
             x = Math.max(player.getCardValue(0), player.getCardValue(1));
             y = Math.min(player.getCardValue(0), player.getCardValue(1));
+
         } else {
+
             x = Math.min(player.getCardValue(0), player.getCardValue(1));
             y = Math.max(player.getCardValue(0), player.getCardValue(1));
+
         }
 
         winProbTable.counts[y][x] += 1;
 
         for (int i = 0; i < 6; i++) {
-            if (player.getHandCode(i) > opponent.getHandCode(i)) {
-                winProbTable.occurences[y][x] += 1;
-                return;
-            } else if (player.getHandCode(i) < opponent.getHandCode(i)) {
+
+            int max = 0;
+
+            for (Player opponent : this.opponents) {
+
+                if (player.getHandCode(i) < opponent.getHandCode(i)) {
+
+                    return;
+                }
+
+                max = Math.max(max, opponent.getHandCode(i));
+            }
+
+            if (player.getHandCode(i) > max) {
+
+                winProbTable.wins[y][x] += 1;
                 return;
             }
         }
 
         //count equality as win (not lose)
-        winProbTable.occurences[y][x] += 1;
+        winProbTable.wins[y][x] += 1;
     }
 
     public String[][] getGameBoard() {

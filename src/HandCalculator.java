@@ -50,22 +50,46 @@ public class HandCalculator {
 
     public void setBestHand() {
 
-        if (checkStraightFlush() != -1) {
-            addStraightFlush(checkStraightFlush());
-        } else if (checkFourOfAKind() != -1) {
-            addFourOfAKind(checkFourOfAKind());
-        } else if (checkFullHouse()[0] != -1 && checkFullHouse()[1] != -1) {
-            addFullHouse(checkFullHouse());
-        } else if (checkFlush() != -1) {
-            addFlush(checkFlush());
-        } else if (checkStraight() != -1) {
-            addStraight(checkStraight());
-        } else if (checkThreeOfAKind() != -1) {
-            addThreeOfAKind(checkThreeOfAKind());
-        } else if (checkPairs().size() > 0) {
-            addPairs(checkPairs());
+        int straightFlush = checkStraightFlush();
+        int fourOfAKind = checkFourOfAKind();
+        int[] fullHouse = checkFullHouse();
+        int flush = checkFlush();
+        int straight = checkStraight();
+        int threeOfAKind = checkThreeOfAKind(12);
+        ArrayList<Integer> pairs = checkPairs();
+
+
+        if (straightFlush != -1) {
+
+            addStraightFlush(straightFlush);
+
+        } else if (fourOfAKind != -1) {
+
+            addFourOfAKind(fourOfAKind);
+
+        } else if (fullHouse[0] != -1 && fullHouse[1] != -1) {
+
+            addFullHouse(fullHouse);
+
+        } else if (flush != -1) {
+
+            addFlush(flush);
+
+        } else if (straight != -1) {
+
+            addStraight(straight);
+
+        } else if (threeOfAKind != -1) {
+
+            addThreeOfAKind(threeOfAKind);
+
+        } else if (pairs.size() > 0) {
+
+            addPairs(pairs);
+
         } else {
-            addHighCard(5);
+
+            addHighCard(5, -1);
         }
     }
 
@@ -116,15 +140,13 @@ public class HandCalculator {
     // FOUR OF A KIND
     public int checkFourOfAKind() {
 
-        if (player.getHandCode(0) != 0) {
+        for (int v = 12; v >= 0; v--) {
 
-            for (int v = 12; v >= 0; v--) {
+            if (gameBoard[4][v] == 4) {
 
-                if (gameBoard[4][v] == 4) {
-
-                    return v;
-                }
+                return v;
             }
+
         }
 
         return -1;
@@ -137,7 +159,7 @@ public class HandCalculator {
             player.setHandCode(0, 7);
             player.setHandCode(1, value + 2);
 
-            addHighCard(1);
+            addHighCard(1, value);
         }
     }
 
@@ -145,14 +167,19 @@ public class HandCalculator {
     // FULL HOUSE
     public int[] checkFullHouse() {
 
-        int threeOfAKind = checkThreeOfAKind();
-        int pair = checkPairs().size() > 0 ? checkPairs().get(0) : -1;
+        int threeOfAKind = checkThreeOfAKind(12);
+        int threeOfAKind2 = checkThreeOfAKind(threeOfAKind - 1);
+        int pair;
 
-        if (threeOfAKind != -1 && pair != -1) {
-            return new int[] {threeOfAKind, pair};
+        if (checkPairs().size() > 0) {
+            pair = checkPairs().get(0);
+        } else if (threeOfAKind2 != -1) {
+            pair = threeOfAKind2;
         } else {
-            return new int[]{-1, -1};
+            pair = -1;
         }
+
+        return new int[]{threeOfAKind, pair};
     }
 
     private void addFullHouse(int[] values) {
@@ -169,14 +196,11 @@ public class HandCalculator {
     // FLUSH
     public int checkFlush() {
 
-        if (player.getHandCode(0) != 0) {
+        for (int s = 0; s < 4; s++) {
 
-            for (int s = 0; s < 4; s++) {
+            if (gameBoard[s][13] >= 5) {
 
-                if (gameBoard[s][13] >= 5) {
-
-                    return s;
-                }
+                return s;
             }
         }
 
@@ -189,47 +213,46 @@ public class HandCalculator {
 
             player.setHandCode(0, 5);
 
-            int v = 12;
             int count = 0;
-            while (count < 5) {
+            boolean sayFlush = true;
+            for (int v = 12; count < 5; v--) {
 
                 if (gameBoard[suit][v] == 1) {
+
+                    if (sayFlush) {
+                        sayFlush = false;
+                    }
 
                     player.setHandCode(count + 1, v + 2);
                     count++;
                 }
-                v--;
             }
         }
     }
 
 
-
     // STRAIGHT
     public int checkStraight() {
 
-        if (player.getHandCode(0) != 0) {
+        for (int v1 = 12; v1 >= 0; v1--) {
 
-            for (int v1 = 12; v1 >= 0; v1--) {
+            if (gameBoard[4][v1] > 0) {
 
-                if (gameBoard[4][v1] > 0) {
+                int count = 0;
 
-                    int count = 0;
+                for (int v2 = v1; v2 >= 0; v2--) {
 
-                    for (int v2 = v1; v2 >= 0; v2--) {
-
-                        if (gameBoard[4][v2] > 0) {
+                    if (gameBoard[4][v2] > 0) {
+                        count++;
+                        if (v2 == 0 && gameBoard[4][12] > 0) {
                             count++;
-                            if (v2 == 0 && gameBoard[4][13] > 0) {
-                                count++;
-                            }
-                        } else {
-                            break;
                         }
+                    } else {
+                        break;
                     }
-
-                    if (count >= 5) return v1;
                 }
+
+                if (count >= 5) return v1;
             }
         }
 
@@ -247,16 +270,13 @@ public class HandCalculator {
 
 
     // THREE OF A KIND
-    public int checkThreeOfAKind() {
+    public int checkThreeOfAKind(int max) {
 
-        if (player.getHandCode(0) != 0) {
+        for (int v = max; v >= 0; v--) {
 
-            for (int v = 12; v >= 0; v--) {
+            if (gameBoard[4][v] == 3) {
 
-                if (gameBoard[4][v] == 3) {
-
-                    return v;
-                }
+                return v;
             }
         }
 
@@ -270,7 +290,7 @@ public class HandCalculator {
             player.setHandCode(0, 3);
             player.setHandCode(1, value + 2);
 
-            addHighCard(2);
+            addHighCard(2, value);
         }
     }
 
@@ -297,12 +317,12 @@ public class HandCalculator {
 
             if (values.size() == 2) {
 
-                addHighCard(1);
+                addHighCard(1, values.get(0), values.get(1));
                 player.setHandCode(0, 2);
 
             } else if (values.size() == 1) {
 
-                addHighCard(3);
+                addHighCard(3, values.get(0));
                 player.setHandCode(0, 1);
 
             }
@@ -321,23 +341,25 @@ public class HandCalculator {
         }
     }
 
+    public void addHighCard(int n, int... inHand) {
 
+        for (int v = 12; n > 0; v--) {
 
+            if (gameBoard[4][v] != 0) {
 
-    public void addHighCard(int n) {
+                for (int i : inHand) {
 
-        int v = 12;
+                    if (v == i) {
 
-        //ATTENTION : ERREUR A CORRIGER!!
-        while (n > 0 && v >=0) {
+                        break;
+                    }
 
-            if (gameBoard[4][v] == 1) {
+                    player.setHandCode(6 - n, v + 2);
+                    n--;
 
-                player.setHandCode(6 - n, v + 2);
-                n--;
+                    break;
+                }
             }
-
-            v--;
         }
     }
 }
